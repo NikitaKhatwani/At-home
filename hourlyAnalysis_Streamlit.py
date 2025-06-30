@@ -87,7 +87,10 @@ def main():
     st.plotly_chart(fig, use_container_width=True)
 
     # EUI Graph
+    # EUI Graph
     eui_fig = go.Figure()
+    
+    # Add EUI traces
     for building in plot_df['Building'].unique():
         bldg_data = plot_df[plot_df['Building'] == building]
         if 'Area' in bldg_data.columns and bldg_data['Area'].notnull().all():
@@ -99,7 +102,21 @@ def main():
                 mode='lines',
                 name=f"{building} (EUI)"
             ))
-
+    
+    # Shade 9AM to 9PM for each date
+    for date in plot_df['Timestamp'].dt.normalize().unique():
+        start = pd.Timestamp(date) + pd.Timedelta(hours=9)
+        end = pd.Timestamp(date) + pd.Timedelta(hours=21)
+        eui_fig.add_vrect(
+            x0=start,
+            x1=end,
+            fillcolor="LightBlue",
+            opacity=0.2,
+            layer="below",
+            line_width=0,
+        )
+    
+    # Layout updates
     eui_fig.update_layout(
         title='Hourly Energy Use Intensity (EUI)',
         xaxis=dict(
@@ -120,8 +137,9 @@ def main():
         template="plotly_white",
         height=600
     )
-
+    
     st.plotly_chart(eui_fig, use_container_width=True)
+    
 
     if not plot_df.empty:
         # Pull summary stats from the climate_df2 (which has base/peak load data)
