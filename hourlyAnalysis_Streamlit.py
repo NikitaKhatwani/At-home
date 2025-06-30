@@ -23,7 +23,7 @@ def load_data(data_file, climate_file):
     return merged_df
 
 def main():
-    st.title("🏢 At Home - Hourly Energy Analysis")
+    st.title("🏢 At Home - Hourly Energy Analysis_")
 
     try:
         df = load_data(DATA_FILE, CLIMATE_FILE)
