@@ -86,60 +86,44 @@ def main():
 
     st.plotly_chart(fig, use_container_width=True)
 
+
     # EUI Graph
-    # EUI Graph
-    eui_fig = go.Figure()
+        eui_fig = go.Figure()
+        for building in plot_df['Building'].unique():
+            bldg_data = plot_df[plot_df['Building'] == building]
+            if 'Area' in bldg_data.columns and bldg_data['Area'].notnull().all():
+                bldg_data = bldg_data.copy()
+                bldg_data['EUI'] = bldg_data['CTR01_BuildingEnergy_kWhHourly(kW-hr)'] / bldg_data['Area']
+                eui_fig.add_trace(go.Scatter(
+                    x=bldg_data['Timestamp'],
+                    y=bldg_data['EUI'],
+                    mode='lines',
+                    name=f"{building} (EUI)"
+                ))
     
-    # Add EUI traces
-    for building in plot_df['Building'].unique():
-        bldg_data = plot_df[plot_df['Building'] == building]
-        if 'Area' in bldg_data.columns and bldg_data['Area'].notnull().all():
-            bldg_data = bldg_data.copy()
-            bldg_data['EUI'] = bldg_data['CTR01_BuildingEnergy_kWhHourly(kW-hr)'] / bldg_data['Area']
-            eui_fig.add_trace(go.Scatter(
-                x=bldg_data['Timestamp'],
-                y=bldg_data['EUI'],
-                mode='lines',
-                name=f"{building} (EUI)"
-            ))
-    
-    # Shade 9AM to 9PM for each date
-    for date in plot_df['Timestamp'].dt.normalize().unique():
-        start = pd.Timestamp(date) + pd.Timedelta(hours=9)
-        end = pd.Timestamp(date) + pd.Timedelta(hours=21)
-        eui_fig.add_vrect(
-            x0=start,
-            x1=end,
-            fillcolor="LightBlue",
-            opacity=0.2,
-            layer="below",
-            line_width=0,
+        eui_fig.update_layout(
+            title='Hourly Energy Use Intensity (EUI)',
+            xaxis=dict(
+                rangeselector=dict(
+                    buttons=[
+                        dict(count=6, label="6h", step="hour", stepmode="backward"),
+                        dict(count=12, label="12h", step="hour", stepmode="backward"),
+                        dict(count=1, label="1d", step="day", stepmode="backward"),
+                        dict(count=7, label="1w", step="day", stepmode="backward"),
+                        dict(step="all", label="All")
+                    ]
+                ),
+                rangeslider=dict(visible=True),
+                type="date"
+            ),
+            yaxis_title="EUI (kWh/sqft)",
+            xaxis_title="Timestamp",
+            template="plotly_white",
+            height=600
         )
     
-    # Layout updates
-    eui_fig.update_layout(
-        title='Hourly Energy Use Intensity (EUI)',
-        xaxis=dict(
-            rangeselector=dict(
-                buttons=[
-                    dict(count=6, label="6h", step="hour", stepmode="backward"),
-                    dict(count=12, label="12h", step="hour", stepmode="backward"),
-                    dict(count=1, label="1d", step="day", stepmode="backward"),
-                    dict(count=7, label="1w", step="day", stepmode="backward"),
-                    dict(step="all", label="All")
-                ]
-            ),
-            rangeslider=dict(visible=True),
-            type="date"
-        ),
-        yaxis_title="EUI (kWh/sqft)",
-        xaxis_title="Timestamp",
-        template="plotly_white",
-        height=600
-    )
-    
-    st.plotly_chart(eui_fig, use_container_width=True)
-    
+        st.plotly_chart(eui_fig, use_container_width=True)
+        
 
     if not plot_df.empty:
         # Pull summary stats from the climate_df2 (which has base/peak load data)
