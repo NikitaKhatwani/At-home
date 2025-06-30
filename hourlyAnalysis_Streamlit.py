@@ -106,7 +106,7 @@ def main():
     # Shade 6AM to 9PM for each date
     for date in plot_df['Timestamp'].dt.normalize().unique():
         start = pd.Timestamp(date) + pd.Timedelta(hours=6)
-        end = pd.Timestamp(date) + pd.Timedelta(hours=21)
+        end = pd.Timestamp(date) + pd.Timedelta(hours=9, minutes=30)
         eui_fig.add_vrect(
             x0=start,
             x1=end,
